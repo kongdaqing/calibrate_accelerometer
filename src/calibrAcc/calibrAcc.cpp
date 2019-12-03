@@ -9,8 +9,9 @@ CalibrAcc::CalibrAcc(unsigned int singleCount,bool setAngleConstant)
         bias[i] = 0;
         angle[i] = 0;
         accDistrib[i] = 0;
+        accDistrib[i+3] = 0;
     }
-    accDistrib[3] = 0;
+    accDistrib[6] = 0;
     cout << "[CalibrAcc]:Please rotate accelerometer in x axis smoothly!" << endl;
 }
 
@@ -42,9 +43,13 @@ void CalibrAcc::pickAccMeasurement(Eigen::Vector3d& accMsg,Eigen::Vector3d& gyro
         return;
     }
 
+    if(gyroMsg.norm()*RAD2DEG < MINRATEDEG*0.5f && averAcc.norm() < G*1.1 && averAcc.norm() > G*0.9 && averAcc.size() < CHECKSIZE)
+        checkAcc.push_back(averAcc);
+
+
     bool pickFinishFlg = true;
-    for (int i = 0;i < 4; i++) {
-       pickFinishFlg = pickFinishFlg && (accDistrib[i] > singleNum);
+    for (int i = 0;i < 7; i++) {
+        pickFinishFlg = pickFinishFlg && (accDistrib[i] >= singleNum);
     }
     if(pickFinishFlg == true)
     {
@@ -54,47 +59,61 @@ void CalibrAcc::pickAccMeasurement(Eigen::Vector3d& accMsg,Eigen::Vector3d& gyro
     }
 
 
-    if(fabs(averAcc.x()) < G*0.1 && fabs(averAcc.y()) > G*0.1 && accDistrib[0] < 2*singleNum)
+    if(averAcc.z() > (G * 0.95) && accDistrib[0] < singleNum)
     {
         accDistrib[0]++;
-        if(accDistrib[0] < 2*singleNum)
-            vecAcc.push_back(accMsg);
-        if(accDistrib[0] == singleNum)
-            printf("[CalibrAcc]:Please rotation in y axis!\n");
-        printf("[CalibrAcc]: Buffer %d acc datas in x axis!\n", accDistrib[0]);
+        vecAcc.push_back(accMsg);
+        printf("[CalibrAcc]: Buffer %d acc datas in z-up direction!\n", accDistrib[0]);
         return;
     }
-    if(fabs(averAcc.y()) < G*0.1 && fabs(averAcc.x()) > G*0.1 && accDistrib[1] < 2*singleNum && accDistrib[0] > singleNum)
+    if(averAcc.y() >  (G * 0.95) && accDistrib[1] < singleNum && accDistrib[0] >= singleNum)
     {
         accDistrib[1]++;
-        if(accDistrib[1] < 2*singleNum)
-            vecAcc.push_back(accMsg);
-        if(accDistrib[1] == singleNum)
-            printf("[CalibrAcc]:Please rotation in z axis!\n");
-        printf("[CalibrAcc]: Buffer %d acc datas in y axis!\n", accDistrib[1]);
+        vecAcc.push_back(accMsg);
+        printf("[CalibrAcc]: Buffer %d acc datas in y-down direction!\n", accDistrib[1]);
         return;
     }
 
-    if(fabs(averAcc.z()) < G*0.1 && fabs(averAcc.y()) > G*0.1 &&  accDistrib[2] < 2*singleNum && accDistrib[1] > singleNum)
+    if(averAcc.y() < (-G * 0.95) && accDistrib[2] < singleNum && accDistrib[1] >= singleNum)
     {
         accDistrib[2]++;
-        if(accDistrib[2] < 2*singleNum)
-            vecAcc.push_back(accMsg);
-        if(accDistrib[2] == singleNum)
-
-        printf("[CalibrAcc]:Please rotation in other axis!\n");
-        printf("[CalibrAcc]: Buffer %d acc datas in z axis!\n", accDistrib[2]);
+        vecAcc.push_back(accMsg);
+        printf("[CalibrAcc]: Buffer %d acc datas in y-up direction!\n", accDistrib[2]);
         return;
     }
 
-    if(fabs(averAcc.z()) > G*0.2 && fabs(averAcc.y()) > G*0.2 && fabs(averAcc.z()) > G*0.2 && accDistrib[3] < 2*singleNum && accDistrib[2] > singleNum)
+
+    if(averAcc.x() > (G * 0.95) && accDistrib[3] < singleNum && accDistrib[2] >= singleNum)
     {
         accDistrib[3]++;
-        if(accDistrib[3] < 2*singleNum)
-            vecAcc.push_back(accMsg);
-        printf("[CalibrAcc]: Buffer %d acc datas in other axis!\n", accDistrib[3]);
+        vecAcc.push_back(accMsg);
+        printf("[CalibrAcc]: Buffer %d acc datas in x-up direction!\n", accDistrib[3]);
         return;
     }
+    if(averAcc.x() < (-G * 0.95) && accDistrib[4] < singleNum && accDistrib[3] >= singleNum)
+    {
+        accDistrib[4]++;
+        vecAcc.push_back(accMsg);
+        printf("[CalibrAcc]: Buffer %d acc datas in x-down direction!\n", accDistrib[4]);
+        return;
+    }
+    if(averAcc.z() <  (-G * 0.95) && accDistrib[5] < singleNum && accDistrib[4] >= singleNum)
+    {
+        accDistrib[5]++;
+        vecAcc.push_back(accMsg);
+        printf("[CalibrAcc]: Buffer %d acc datas in z-down direction!\n", accDistrib[5]);
+        return;
+    }
+
+
+    if(fabs(averAcc.x()) > G*0.25 && fabs(averAcc.y()) > G*0.25 && fabs(averAcc.z()) > G*0.25 && accDistrib[6] < 2*singleNum && accDistrib[5] >= singleNum)
+    {
+        accDistrib[6]++;
+        vecAcc.push_back(accMsg);
+        printf("[CalibrAcc]: Buffer %d acc datas in other direction!\n", accDistrib[6]);
+        return;
+    }
+
 
 }
 
@@ -130,4 +149,48 @@ void CalibrAcc::accOptimization()
     cout << "Parameters angle: " << angle[0] << " " << angle[1] << " " << angle[2] << endl;
     cout << "Parameters k: " << k[0] << " " << k[1] << " " << k[2] << endl;\
     cout << "Parameters bias: " << bias[0] << " " << bias[1] << " " << bias[2] << endl;
+
+    checkCalibrParameters();
+
+}
+
+void CalibrAcc::calibrAccMeasurement(Eigen::Vector3d& rawAcc,Eigen::Vector3d& resAcc)
+{
+    Eigen::Matrix3d R;
+    R <<            k[0],  k[1]*angle[2], -k[2]*angle[0],
+          -k[0]*angle[2],           k[1],  k[2]*angle[1],
+           k[0]*angle[0], -k[1]*angle[1],           k[2];
+    Eigen::Vector3d b{Eigen::Vector3d(bias[0],bias[1],bias[2])};
+   // cout <<"R: " <<  R << endl << "b : " << b << endl;
+    resAcc = R * (rawAcc + b);
+}
+void CalibrAcc::checkCalibrParameters()
+{
+
+    double  AccNorm = 0,rawAccNorm = 0;
+
+    for (int i = 0; i < vecAcc.size(); i++) {
+        rawAccNorm += vecAcc[i].norm();
+        Eigen::Vector3d tmpAcc;
+        calibrAccMeasurement(vecAcc[i],tmpAcc);
+        AccNorm += tmpAcc.norm();
+    }
+    rawAccNorm /= vecAcc.size();
+    AccNorm /= vecAcc.size();
+    printf("[CalibrAcc]: Raw average norm = %f, Calibr average norm = %f \n",rawAccNorm,AccNorm);
+
+    double sumRSE = 0,rawSumRSE = 0;
+    for (int i = 0; i < vecAcc.size(); i++) {
+        double rawErr,calErr;
+        rawErr = vecAcc[i].norm() - rawAccNorm;
+        rawSumRSE += rawErr*rawErr;
+        Eigen::Vector3d tmpAcc;
+        calibrAccMeasurement(vecAcc[i],tmpAcc);
+        calErr = tmpAcc.norm() - AccNorm;
+        sumRSE += calErr*calErr;
+    }
+    double calibrRSE,rawRSE;
+    calibrRSE = sumRSE/vecAcc.size();
+    rawRSE = rawSumRSE/vecAcc.size();
+    printf("[CalibrACC]:Raw acc rse = %f ,Calibrated acc rse = %f\n",rawRSE,calibrRSE);
 }

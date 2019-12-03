@@ -27,16 +27,16 @@ bool GravityNormFactor::Evaluate(const double *const *parameters, double *residu
     by = parameters[2][1];
     bz = parameters[2][2];
 
-    double ax_c =    kx * (ax + bx) + psi * (ay + by) - theta * (az + bz);
-    double ay_c =  -psi * (ax + bx) +  ky * (ay + by) +   phi * (az + bz);
-    double az_c = theta * (ax + bx) - phi * (ay + by) +    kz * (az + bz);
+    double ax_c =         kx * (ax + bx)   +   ky * psi * (ay + by)  -  kz * theta * (az + bz);
+    double ay_c =  -kx * psi * (ax + bx)   +         ky * (ay + by)  +    kz * phi * (az + bz);
+    double az_c = kx * theta * (ax + bx)   -   ky * phi * (ay + by)  +          kz * (az + bz);
     double acc_norm = sqrt(ax_c*ax_c + ay_c*ay_c + az_c*az_c);
     double delta_norm = acc_norm - G_NORM;
     residuals[0] = delta_norm*delta_norm;
 
     Eigen::Matrix<double, 1, 3> res2acc(1,3);
     res2acc << ax_c/acc_norm, ay_c/acc_norm, az_c/acc_norm;
-    res2acc *= 2*delta_norm;
+    res2acc = 2 * delta_norm * res2acc;
 
 
     if(jacobians)
@@ -45,9 +45,9 @@ bool GravityNormFactor::Evaluate(const double *const *parameters, double *residu
         {
             Eigen::Map<Eigen::Matrix<double,1, 3>> jacob_angle(jacobians[0]);
             Eigen::Matrix3d acc2angle;
-            acc2angle << -(az + bz), 0, ax + bx,
-                    0, az + bz, -(ay + by),
-                    ay + by, -(ax + bx), 0;
+            acc2angle << -kz * (az + bz),              0,   ky * (ay + by),
+                                       0,  kz * (az + bz), -kx * (ax + bx),
+                          kx * (ax + bx), -ky * (ay + by),               0;
             jacob_angle = res2acc * acc2angle;
         }
 
@@ -55,9 +55,9 @@ bool GravityNormFactor::Evaluate(const double *const *parameters, double *residu
         {
             Eigen::Map<Eigen::Matrix<double,1, 3>> jacob_k(jacobians[1]);
             Eigen::Matrix3d acc2k;
-            acc2k <<    ax + bx, 0, 0,
-                    0, ay + by, 0,
-                    0, 0, az + bz;
+            acc2k <<           ax + bx,  psi * (ay + by),   -theta * (az + bz),
+                      -psi * (ax + bx),          ay + by,      phi * (az + bz),
+                     theta * (ax + bx), -phi * (ay + by),              az + bz;
             jacob_k = res2acc * acc2k;
         }
 
@@ -65,9 +65,9 @@ bool GravityNormFactor::Evaluate(const double *const *parameters, double *residu
         {
             Eigen::Map<Eigen::Matrix<double,1, 3>> jacob_bias(jacobians[2]);
             Eigen::Matrix3d acc2bias;
-            acc2bias <<  kx, -psi, theta,
-                    psi,  ky, -phi,
-                    -theta, phi,   kz;
+            acc2bias <<      kx,  ky * psi,  -kz * theta,
+                      -ky * psi,        ky,     kz * phi,
+                     kx * theta, -ky * phi,           kz;
             jacob_bias = res2acc * acc2bias;
         }
     }

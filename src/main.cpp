@@ -14,9 +14,9 @@ int main(int argc,char** argv)
   std::string imu_file = file_path +  "imu_file.cvs";
   std::string odo_file = file_path + "odometer_file.cvs";
   std::string opt_file = file_path + "optical_flow_file.cvs";
-  string anker_data_path = file_path + "img/" ;
+
   readAnkerDataFile ankerSensor(imu_file,odo_file,opt_file);
-  CalibrAcc calibr_acc(1500,false);
+  CalibrAcc calibr_acc(2000,true);
 
   for (int i = 0;ankerSensor.AnkerDataSet.size(); i++) {
        if(calibr_acc.pickOverFlg == false)
