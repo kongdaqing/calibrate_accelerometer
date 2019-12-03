@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++11 -O3 -Wall -g  -rdynamic CMakeFiles/kalibr_acc.dir/src/main.cpp.o CMakeFiles/kalibr_acc.dir/src/anker/readAnkerDataFile.cpp.o CMakeFiles/kalibr_acc.dir/src/calibrAcc/calibrAcc.cpp.o  -o kalibr_acc 
