@@ -121,8 +121,8 @@ void CalibrAcc::accOptimization()
 {
     ceres::Problem problem;
     ceres::LossFunction *loss_function;
-    //loss_function = NULL;
-    //loss_function = new ceres::HuberLoss(1.0);
+    loss_function = NULL;
+    loss_function = new ceres::HuberLoss(1.0);
 
     problem.AddParameterBlock(angle,3);
     problem.AddParameterBlock(k,3);
@@ -133,8 +133,8 @@ void CalibrAcc::accOptimization()
     for (unsigned int i = 0; i < vecAcc.size(); i++) {
         Eigen::Vector3d acc = vecAcc[i];
         //printf("[CalibrAcc]: acc %f,%f,%f\n",acc.x(),acc.y(),acc.z());
-        GravityNormFactor* gnormFactor = new  GravityNormFactor(G,acc);
-        problem.AddResidualBlock(gnormFactor,NULL,angle,k,bias);
+        GravityNormFactor* gnormFactor = new  GravityNormFactor(G,WEIGHT,acc);
+        problem.AddResidualBlock(gnormFactor,loss_function,angle,k,bias);
     }
 
 
@@ -142,7 +142,7 @@ void CalibrAcc::accOptimization()
     ceres::Solver::Options options;
     options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
     options.minimizer_progress_to_stdout = true;
-    options.max_num_iterations = 30;
+    options.max_num_iterations = 100;
     ceres::Solver::Summary summary;
     ceres::Solve(options,&problem,&summary);
     cout << summary.BriefReport() << "\n";

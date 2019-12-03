@@ -6,23 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/home/zx/workspace/kalibr_ws/src/calibrate_accelerometer/src/anker/ankerDataType.h
-
-/home/zx/workspace/kalibr_ws/src/calibrate_accelerometer/src/anker/readAnkerDataFile.h
-ankerDataType.h
-/home/zx/workspace/kalibr_ws/src/calibrate_accelerometer/src/anker/ankerDataType.h
-iostream
--
-fstream
--
-queue
--
-string
--
-math.h
--
-assert.h
--
+/home/zx/workspace/kalibr_ws/src/calibrate_accelerometer/src/calibrAcc/calibrAcc.cpp
+calibrAcc.hpp
+/home/zx/workspace/kalibr_ws/src/calibrate_accelerometer/src/calibrAcc/calibrAcc.hpp
 
 /home/zx/workspace/kalibr_ws/src/calibrate_accelerometer/src/calibrAcc/calibrAcc.hpp
 Eigen/Dense
@@ -41,14 +27,6 @@ ceres/ceres.h
 -
 Eigen/Dense
 -
-
-/home/zx/workspace/kalibr_ws/src/calibrate_accelerometer/src/main.cpp
-iostream
--
-anker/readAnkerDataFile.h
-/home/zx/workspace/kalibr_ws/src/calibrate_accelerometer/src/anker/readAnkerDataFile.h
-calibrAcc/calibrAcc.hpp
-/home/zx/workspace/kalibr_ws/src/calibrate_accelerometer/src/calibrAcc/calibrAcc.hpp
 
 /usr/local/include/eigen3/Eigen/Cholesky
 Core

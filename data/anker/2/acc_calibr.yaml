@@ -1,0 +1,10 @@
+
+Parameters angle: 0.00115375 -0.00422377 -0.00125072
+Parameters k: 1.00677 1.00359 0.994657
+Parameters bias: 0.0111717 0.0154253 -0.217192
+
+LossFunction:
+Parameters angle: 0.0031213 -0.00247136 -0.00129907
+Parameters k: 1.00611 1.00342 0.996171
+Parameters bias: 0.0177334 0.0223509 -0.209035
+

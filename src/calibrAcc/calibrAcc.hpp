@@ -7,6 +7,7 @@
 #include "gravityNormFactor.h"
 
 #define G 9.7936
+#define WEIGHT 0.1
 #define RAD2DEG 57.3
 #define MINRATEDEG 10.0
 #define ACCDIV 1
