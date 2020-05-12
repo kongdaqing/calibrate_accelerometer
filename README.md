@@ -1,8 +1,8 @@
 # calibrate_accelerometer
  algrithm of calibrating accelerometer with least sqaured optimization <br>
 ## Model:
-                1   psi  -theta    kx  0   0          bx  
-                
+
+                1   psi  -theta    kx  0   0          bx  <br>
 acc_calibr = [-psi   1     phi  ][  0  ky  0](acc + [ by ]) <br>
               theta -phi   1        0  0  kz          bz    <br>
 ## Residual:
